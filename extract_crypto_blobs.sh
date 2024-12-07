@@ -35,10 +35,30 @@ mkdir -p "$DEST_VENDOR_THH_TA"
 
 # Debugging - log the ROM dump directory
 echo "Using ROM dump directory: $ROM_DUMP_DIR"
-echo "Searching for libraries, binaries, mcRegistry, thh/ta files, mcDriverDaemon, and teei_daemon in this path..."
+echo "Searching for libraries, binaries, mcRegistry, thh/ta files, mcDriverDaemon, teei_daemon, and .rc files in this path..."
 
-# Search for "keymaster", "gatekeeper", "keymint" related .so files
-find "$ROM_DUMP_DIR" -type f \( -name "*keymaster*.so" -o -name "*gatekeeper*.so" -o -name "*keymint*.so" \) | while read -r file; do
+# Search for .rc files and copy them to the current directory
+find "$ROM_DUMP_DIR" -type f \( -name "microtrust.rc" -o -name "trustonic.rc" -o -name "tee.rc" \) | while read -r rc_file; do
+    echo "Found .rc file: $rc_file"
+    echo "Copying to current directory"
+    cp -v "$rc_file" ./
+
+    # Check if trustonic.rc is found and update init.custom.rc
+    if [[ "$rc_file" == *"trustonic.rc"* ]]; then
+        echo "trustonic.rc detected. Adding Trustonic mount instructions to init.custom.rc"
+        INIT_CUSTOM_RC="./init.custom.rc"
+        if [ ! -f "$INIT_CUSTOM_RC" ]; then
+            touch "$INIT_CUSTOM_RC"
+        fi
+        echo -e "\n#Added Manual For Trustonic" >> "$INIT_CUSTOM_RC"
+        echo "mkdir /mnt/vendor/persist" >> "$INIT_CUSTOM_RC"
+        echo "mount ext4 /dev/block/by-name/persist /mnt/vendor/persist rw" >> "$INIT_CUSTOM_RC"
+    fi
+
+done
+
+# Search for "keymaster", "gatekeeper", "keymint", "TEE", or "McClient" related .so files
+find "$ROM_DUMP_DIR" -type f \( -name "*keymaster*.so" -o -name "*gatekeeper*.so" -o -name "*keymint*.so" -o -name "*TEE*.so" -o -name "*McClient*.so" \) | while read -r file; do
     echo "Found: $file"
     
     # Copy logic for system, system_ext, vendor directories
@@ -65,8 +85,8 @@ find "$ROM_DUMP_DIR" -type f \( -name "*keymaster*.so" -o -name "*gatekeeper*.so
     fi
 done
 
-# Search for binaries in vendor/bin/hw/ related to keymaster, gatekeeper, or keymint
-find "$ROM_DUMP_DIR/vendor/bin/hw" -type f \( -name "*keymaster*" -o -name "*gatekeeper*" -o -name "*keymint*" \) | while read -r bin_file; do
+# Search for binaries in vendor/bin/hw/ related to keymaster, gatekeeper, keymint, or teei_daemon
+find "$ROM_DUMP_DIR/vendor/bin/hw" -type f \( -name "*keymaster*" -o -name "*gatekeeper*" -o -name "*keymint*" -o -name "teei_daemon" \) | while read -r bin_file; do
     echo "Found binary: $bin_file"
     
     # Copy logic for vendor/bin/hw
@@ -76,13 +96,6 @@ find "$ROM_DUMP_DIR/vendor/bin/hw" -type f \( -name "*keymaster*" -o -name "*gat
     else
         echo "Unknown or unhandled binary path for: $bin_file - skipping."
     fi
-done
-
-# Search for teei_daemon in vendor/bin
-find "$ROM_DUMP_DIR/vendor/bin" -type f -name "teei_daemon" | while read -r teei_daemon_file; do
-    echo "Found teei_daemon: $teei_daemon_file"
-    echo "Copying to vendor/bin/"
-    cp -v "$teei_daemon_file" "$DEST_VENDOR_BIN/"
 done
 
 # Search for mcDriverDaemon in vendor/bin
@@ -107,13 +120,6 @@ if [ -d "$ROM_DUMP_DIR/vendor/thh/ta" ]; then
 else
     echo "No vendor/thh/ta directory found. Skipping."
 fi
-
-# Search for .rc files (microtrust.rc, trustonic.rc, tee.rc)
-find "$ROM_DUMP_DIR" -type f \( -name "microtrust.rc" -o -name "trustonic.rc" -o -name "tee.rc" \) | while read -r rc_file; do
-    echo "Found RC file: $rc_file"
-    echo "Copying to current directory"
-    cp -v "$rc_file" ./
-done
 
 # Function to delete empty directories
 delete_empty_dirs() {
