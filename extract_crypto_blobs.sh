@@ -35,10 +35,10 @@ mkdir -p "$DEST_VENDOR_THH_TA"
 
 # Debugging - log the ROM dump directory
 echo "Using ROM dump directory: $ROM_DUMP_DIR"
-echo "Searching for libraries, binaries, mcRegistry, thh/ta files, and mcDriverDaemon in this path..."
+echo "Searching for libraries, binaries, mcRegistry, thh/ta files, mcDriverDaemon, and teei_daemon in this path..."
 
-# Search for "keymaster", "gatekeeper", "keymint", "TEE", or "McClient" related .so files
-find "$ROM_DUMP_DIR" -type f \( -name "*keymaster*.so" -o -name "*gatekeeper*.so" -o -name "*keymint*.so" -o -name "*TEE*.so" -o -name "*McClient*.so" \) | while read -r file; do
+# Search for "keymaster", "gatekeeper", "keymint" related .so files
+find "$ROM_DUMP_DIR" -type f \( -name "*keymaster*.so" -o -name "*gatekeeper*.so" -o -name "*keymint*.so" \) | while read -r file; do
     echo "Found: $file"
     
     # Copy logic for system, system_ext, vendor directories
@@ -65,8 +65,8 @@ find "$ROM_DUMP_DIR" -type f \( -name "*keymaster*.so" -o -name "*gatekeeper*.so
     fi
 done
 
-# Search for binaries in vendor/bin/hw/ related to keymaster, gatekeeper, keymint, TEE, or McClient
-find "$ROM_DUMP_DIR/vendor/bin/hw" -type f \( -name "*keymaster*" -o -name "*gatekeeper*" -o -name "*keymint*" -o -name "*TEE*" -o -name "*McClient*" \) | while read -r bin_file; do
+# Search for binaries in vendor/bin/hw/ related to keymaster, gatekeeper, or keymint
+find "$ROM_DUMP_DIR/vendor/bin/hw" -type f \( -name "*keymaster*" -o -name "*gatekeeper*" -o -name "*keymint*" \) | while read -r bin_file; do
     echo "Found binary: $bin_file"
     
     # Copy logic for vendor/bin/hw
@@ -79,10 +79,10 @@ find "$ROM_DUMP_DIR/vendor/bin/hw" -type f \( -name "*keymaster*" -o -name "*gat
 done
 
 # Search for teei_daemon in vendor/bin
-find "$ROM_DUMP_DIR/vendor/bin" -type f -name "teei_daemon" | while read -r teei_file; do
-    echo "Found teei_daemon: $teei_file"
+find "$ROM_DUMP_DIR/vendor/bin" -type f -name "teei_daemon" | while read -r teei_daemon_file; do
+    echo "Found teei_daemon: $teei_daemon_file"
     echo "Copying to vendor/bin/"
-    cp -v "$teei_file" "$DEST_VENDOR_BIN/"
+    cp -v "$teei_daemon_file" "$DEST_VENDOR_BIN/"
 done
 
 # Search for mcDriverDaemon in vendor/bin
@@ -107,6 +107,13 @@ if [ -d "$ROM_DUMP_DIR/vendor/thh/ta" ]; then
 else
     echo "No vendor/thh/ta directory found. Skipping."
 fi
+
+# Search for .rc files (microtrust.rc, trustonic.rc, tee.rc)
+find "$ROM_DUMP_DIR" -type f \( -name "microtrust.rc" -o -name "trustonic.rc" -o -name "tee.rc" \) | while read -r rc_file; do
+    echo "Found RC file: $rc_file"
+    echo "Copying to current directory"
+    cp -v "$rc_file" ./
+done
 
 # Function to delete empty directories
 delete_empty_dirs() {
