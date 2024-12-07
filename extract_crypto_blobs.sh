@@ -16,6 +16,7 @@ DEST_SYSTEM_EXT_LIB64="./system_ext/lib64"
 DEST_SYSTEM_EXT_LIB64_HW="./system_ext/lib64/hw"
 DEST_VENDOR_LIB64="./vendor/lib64"
 DEST_VENDOR_LIB64_HW="./vendor/lib64/hw"
+DEST_VENDOR_BIN="./vendor/bin"
 DEST_VENDOR_BIN_HW="./vendor/bin/hw"
 DEST_VENDOR_APP_MCRegistry="./vendor/app/mcRegistry"
 DEST_VENDOR_THH_TA="./vendor/thh/ta"
@@ -27,16 +28,17 @@ mkdir -p "$DEST_SYSTEM_EXT_LIB64"
 mkdir -p "$DEST_SYSTEM_EXT_LIB64_HW"
 mkdir -p "$DEST_VENDOR_LIB64"
 mkdir -p "$DEST_VENDOR_LIB64_HW"
+mkdir -p "$DEST_VENDOR_BIN"
 mkdir -p "$DEST_VENDOR_BIN_HW"
 mkdir -p "$DEST_VENDOR_APP_MCRegistry"
 mkdir -p "$DEST_VENDOR_THH_TA"
 
 # Debugging - log the ROM dump directory
 echo "Using ROM dump directory: $ROM_DUMP_DIR"
-echo "Searching for libraries, binaries, mcRegistry, and thh/ta files in this path..."
+echo "Searching for libraries, binaries, mcRegistry, thh/ta files, and mcDriverDaemon in this path..."
 
-# Search for "keymaster", "gatekeeper", or "keymint" related .so files
-find "$ROM_DUMP_DIR" -type f \( -name "*keymaster*.so" -o -name "*gatekeeper*.so" -o -name "*keymint*.so" \) | while read -r file; do
+# Search for "keymaster", "gatekeeper", "keymint", "TEE", or "McClient" related .so files
+find "$ROM_DUMP_DIR" -type f \( -name "*keymaster*.so" -o -name "*gatekeeper*.so" -o -name "*keymint*.so" -o -name "*TEE*.so" -o -name "*McClient*.so" \) | while read -r file; do
     echo "Found: $file"
     
     # Copy logic for system, system_ext, vendor directories
@@ -63,8 +65,8 @@ find "$ROM_DUMP_DIR" -type f \( -name "*keymaster*.so" -o -name "*gatekeeper*.so
     fi
 done
 
-# Search for binaries in vendor/bin/hw/ related to keymaster, gatekeeper, or keymint
-find "$ROM_DUMP_DIR/vendor/bin/hw" -type f \( -name "*keymaster*" -o -name "*gatekeeper*" -o -name "*keymint*" \) | while read -r bin_file; do
+# Search for binaries in vendor/bin/hw/ related to keymaster, gatekeeper, keymint, TEE, or McClient
+find "$ROM_DUMP_DIR/vendor/bin/hw" -type f \( -name "*keymaster*" -o -name "*gatekeeper*" -o -name "*keymint*" -o -name "*TEE*" -o -name "*McClient*" \) | while read -r bin_file; do
     echo "Found binary: $bin_file"
     
     # Copy logic for vendor/bin/hw
@@ -74,6 +76,20 @@ find "$ROM_DUMP_DIR/vendor/bin/hw" -type f \( -name "*keymaster*" -o -name "*gat
     else
         echo "Unknown or unhandled binary path for: $bin_file - skipping."
     fi
+done
+
+# Search for teei_daemon in vendor/bin
+find "$ROM_DUMP_DIR/vendor/bin" -type f -name "teei_daemon" | while read -r teei_file; do
+    echo "Found teei_daemon: $teei_file"
+    echo "Copying to vendor/bin/"
+    cp -v "$teei_file" "$DEST_VENDOR_BIN/"
+done
+
+# Search for mcDriverDaemon in vendor/bin
+find "$ROM_DUMP_DIR/vendor/bin" -type f -name "mcDriverDaemon" | while read -r mc_driver_file; do
+    echo "Found mcDriverDaemon: $mc_driver_file"
+    echo "Copying to vendor/bin/"
+    cp -v "$mc_driver_file" "$DEST_VENDOR_BIN/"
 done
 
 # Extract all files in vendor/app/mcRegistry if it exists
@@ -107,6 +123,7 @@ delete_empty_dirs "$DEST_SYSTEM_EXT_LIB64_HW"
 delete_empty_dirs "$DEST_VENDOR_LIB64"
 delete_empty_dirs "$DEST_VENDOR_LIB64_HW"
 delete_empty_dirs "$DEST_VENDOR_BIN_HW"
+delete_empty_dirs "$DEST_VENDOR_BIN"
 delete_empty_dirs "$DEST_VENDOR_APP_MCRegistry"
 delete_empty_dirs "$DEST_VENDOR_THH_TA"
 
@@ -124,4 +141,3 @@ fi
 
 # Final Debugging Log
 echo "Extraction and cleanup completed."
-
