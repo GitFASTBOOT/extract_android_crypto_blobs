@@ -131,6 +131,66 @@ else
     echo "No vendor/mitee/ta directory found. Skipping."
 fi
 
+# Check if the mitee folder exists in the ROM dump
+if [ -d "$ROM_DUMP_DIR/vendor/mitee" ]; then
+    echo "Detected vendor/mitee folder. Creating init.mitee.rc file..."
+    
+    # Create the init.mitee.rc file
+    cat > init.mitee.rc << 'EOF'
+service tee-supplicant /vendor/bin/tee-supplicant
+    class core
+    user root
+    group root
+    disabled
+    seclabel u:r:recovery:s0
+
+service miteelog /vendor/bin/miteelog
+    user root
+    group root
+    disabled
+    seclabel u:r:recovery:s0
+
+# tee-supplicant
+on fs
+    write /proc/bootprof "init tee-supplicant"
+    # set SELinux security contexts on upgrade or policy update
+    restorecon_recursive /mnt/vendor/persist
+    chmod 0660 /dev/tee0
+    chmod 0660 /dev/teepriv0
+    chown system system /dev/tee0
+    chown system system /dev/teepriv0
+    chmod 0660 /dev/rpmb0
+    chmod 0660 /dev/mmcblk0rpmb
+    chmod 0660 /dev/0:0:0:49476
+    chmod 0660 /dev/ufs-bsg0
+    chmod 0666 /dev/kmsg
+    chown system system /dev/rpmb0
+    chown system system /dev/mmcblk0rpmb
+    chown system system /dev/0:0:0:49476
+    chown system system /dev/ufs-bsg0
+    start tee-supplicant
+    mkdir /mnt/vendor/persist/data 0755 system system
+    mkdir /mnt/vendor/persist/fdsd 0755 system system
+    setprop vendor.teefs_state ready
+    setprop ro.hardware.gatekeeper mitee
+
+# miteelog
+on post-fs-data
+    mkdir /data/vendor/mitee
+    chmod 0755 /data/vendor/mitee
+    chown system system /data/vendor/mitee
+    mkdir /data/vendor/thh
+    chmod 0755 /data/vendor/thh
+    chown system system /data/vendor/thh
+    write /proc/bootprof "init miteelog"
+    start miteelog
+EOF
+
+    echo "init.mitee.rc file created successfully."
+else
+    echo "No vendor/mitee folder detected. Skipping init.mitee.rc creation."
+fi
+
 # Function to delete empty directories
 delete_empty_dirs() {
     local dir="$1"
