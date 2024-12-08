@@ -21,6 +21,7 @@ DEST_VENDOR_BIN_HW="./vendor/bin/hw"
 DEST_VENDOR_APP_MCRegistry="./vendor/app/mcRegistry"
 DEST_VENDOR_THH="./vendor/thh"
 DEST_VENDOR_THH_TA="./vendor/thh/ta"
+DEST_VENDOR_MITEE_TA="./vendor/mitee/ta"
 
 # Create destination directories if they don't exist
 mkdir -p "$DEST_SYSTEM_LIB64"
@@ -33,6 +34,7 @@ mkdir -p "$DEST_VENDOR_BIN"
 mkdir -p "$DEST_VENDOR_BIN_HW"
 mkdir -p "$DEST_VENDOR_APP_MCRegistry"
 mkdir -p "$DEST_VENDOR_THH_TA"
+mkdir -p "$DEST_VENDOR_MITEE_TA"
 
 # Debugging - log the ROM dump directory
 echo "Using ROM dump directory: $ROM_DUMP_DIR"
@@ -121,6 +123,14 @@ else
     echo "No vendor/thh/ta directory found. Skipping."
 fi
 
+# Extract all files in vendor/mitee/ta if it exists
+if [ -d "$ROM_DUMP_DIR/vendor/mitee/ta" ]; then
+    echo "Found vendor/mitee/ta directory. Extracting files..."
+    cp -r -v "$ROM_DUMP_DIR/vendor/mitee/ta/." "$DEST_VENDOR_MITEE_TA/"
+else
+    echo "No vendor/mitee/ta directory found. Skipping."
+fi
+
 # Function to delete empty directories
 delete_empty_dirs() {
     local dir="$1"
@@ -139,6 +149,7 @@ delete_empty_dirs "$DEST_VENDOR_BIN_HW"
 delete_empty_dirs "$DEST_VENDOR_BIN"
 delete_empty_dirs "$DEST_VENDOR_APP_MCRegistry"
 delete_empty_dirs "$DEST_VENDOR_THH_TA"
+delete_empty_dirs "$DEST_VENDOR_MITEE_TA"
 
 # Special cleanup for vendor/thh if it's empty
 if [ -d "$DEST_VENDOR_THH" ]; then
@@ -164,5 +175,18 @@ if [ -d "./system_ext" ]; then
     fi
 fi
 
+# Special cleanup for vendor/mitee if it's empty
+if [ -d "./vendor/mitee" ]; then
+    echo "Checking if vendor/mitee is empty..."
+    if [ -z "$(ls -A ./vendor/mitee)" ]; then
+        echo "vendor/mitee is empty. Deleting it..."
+        rm -rf "./vendor/mitee"
+        echo "Deleted empty vendor/mitee directory."
+    else
+        echo "vendor/mitee is not empty. Skipping deletion."
+    fi
+fi
+
 # Final Debugging Log
 echo "Extraction and cleanup completed."
+
