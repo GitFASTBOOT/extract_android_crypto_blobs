@@ -12,6 +12,7 @@ This script is a utility for extracting specific system libraries, binaries, and
 - Extracts files from the following paths if they exist:
   - `vendor/app/mcRegistry`
   - `vendor/thh/ta`
+  - `vendor/mitee/ta`
 - Handles extraction for:
   - `system/lib64`
   - `system/lib64/hw`
@@ -74,6 +75,7 @@ After extraction, the files will be sorted into the following directories:
 - **`./vendor/bin/hw/`**: Extracted `keymaster`, `gatekeeper`, `keymint`, and other relevant binaries.
 - **`./vendor/app/mcRegistry/`**: Extracted if it exists.
 - **`./vendor/thh/ta/`**: Extracted if it exists.
+- **`./vendor/mitee/ta/`**: Extracted if it exists.
 
 ---
 
