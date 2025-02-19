@@ -4,7 +4,9 @@ This script is a utility to extract libraries such as binaries, services and oth
 
 > [!CAUTION]
 > The utility only interacts passively between the stock ROM folders the files requested in the script. Therefore, there are not enough changes to work magic and create a correct Device Tree with the files extrated.
+> >
 > The files are as they are, and what will make the difference in having a correct Device Tree is how the user makes his own modifications based on his own device. In addition, it is important that the user reviews the result (output folders) and the stock ROM folders to check and see if more files are still needed.
+> >
 > In this context, learning and having knowledge[^¹] for the changes, as well as where the information is and where to place it is the user's sole responsibility.
 
 ---
@@ -13,7 +15,7 @@ This script is a utility to extract libraries such as binaries, services and oth
 
 - Extracts **keymaster**, **gatekeeper**, **keymint** binaries and libraries files from the Firmware folder.
 - Extracts binaries files from `vendor/bin/hw` related to `keymaster`, `gatekeeper`, or `keymint`.
-- Extracts binaries files from `vendor/bin` related to `mcRegistry`, `teei_daemon`, or `teed`.
+- Extracts service files from `vendor/bin` related to `mcRegistry`, `teei_daemon`, or `teed`.
 - Extracts files from the following paths if they exist:
   - `vendor/app/mcRegistry`
   - `vendor/thh/ta`
@@ -34,7 +36,7 @@ This script is a utility to extract libraries such as binaries, services and oth
   - `vendor/firmware`
   - `vendor/etc/vintf`
   - `vendor/etc/vintf/manifest`
-- Cleans up **empty directories** after extraction, including automatically checking if `system_ext` is empty and deleting it.
+- Cleans up **empty directories** after extraction, including automatically checking if `system_ext` and/or `vendor/app` is empty and deleting it.
 
 ---
 
@@ -64,19 +66,16 @@ Before using this script, ensure:
 ### Unpacked stock ROM folders from firmware.img
 1. Copy stock ROM folders to `extract_android_crypto_blobs/Firmware` folder.
    Example: `/Firmware/vendor` & `/Firmware/system` & `/Firmware/system_ext`
-   Dont't worries if you stock ROM not have `/system_ext`.
-   Usually the stock ROM system.img file is unpacked like this: `system/system/`. Note that we want the second part of `system` and therefore indicated like system/**system/**.
+   - Dont't worries if you stock ROM not have `/system_ext`.
+   - Usually the stock ROM system.img file is unpacked like this: `system/system/`. Note that we want the second part of `system` and therefore indicated like system/**system/**.
 
-   
-<details><summary>Click to open</summary>
-<p>
+   >
+   <details><summary>Click to open</summary>
+   <p>
 
-## copy picture od FileManager extract_android_crypto_blobs/Firmware
-
-
-</p>
-</details>
-
+   ![stock_ROM](https://github.com/user-attachments/assets/00cb6c62-96a0-46e4-ac24-8b3bc14e2b19)
+   </p>
+   </details>
 
 ### Run the script
 2. Run[^³] the script according to the extracted extract_android_crypto_blobs folder or the folder that you created:
@@ -84,22 +83,9 @@ Before using this script, ensure:
    ./extract_crypto_blobs.sh
    ```
 
-<details><summary>Click to open</summary>
-<p>
-
-## copy picture od FileManager extract_android_crypto_blobs
-
-
-</p>
-</details>
-
 
 [^¹]: If you want to learn more, visit [Copying firmware files to the Device Tree - Mediatek](https://gist.github.com/lopestom/c4a2648958db5c3db03d32033a3583cd)
-[^²]: This script **already has permission**. But if you have any doubts then you can check the script with:
-   ```bash
-   chmod +x extract_crypto_blobs.sh
-   ```
-
+[^²]: This script **already has permission**. But if you have any doubts then you can check the script with `chmod +x extract_crypto_blobs.sh`
 [^³]: Use whatever Terminal emulator you want/prefer. You can type directly into the Terminal or double-click on the sh file.
 
 ---
@@ -132,6 +118,7 @@ After extraction, the sorted files are automatically copied into the following a
 1. **Automatic Cleanup**:
    - Deletes empty directories after extraction.
    - Cleans `system_ext` only if it's completely empty.
+   - Cleans `vendor/app` only if it's completely empty.
 
 2. **Binaries Search**:
    - The script searches for `keymaster`, `gatekeeper` and `keymint` binaries/libraries files automatically.
@@ -141,9 +128,9 @@ After extraction, the sorted files are automatically copied into the following a
      <details><summary>Click to open</summary>
      <p>
 
-     ## copy pictureS od FileManager extract_android_crypto_blobs
-
-
+       ![A](https://github.com/user-attachments/assets/58a2da30-0fcd-407d-9e80-892732c092fe)
+       ![B](https://github.com/user-attachments/assets/760ce1b0-4f9b-4bea-90b6-281234d61218)
+       ![C](https://github.com/user-attachments/assets/1fd9a4b1-d246-4c77-bf6d-7a4a861067e9)
      </p>
      </details>
 
@@ -161,11 +148,12 @@ Visualization and Explanation of script steps
 Step | happening |   | Step | happening
 | ---: | :--- | :---: | ---: | :---
 1-| Run the script |  | 6- | Debugging with encryption/decryption mode visualization
-2-| Alert message so you don't forget |  | 7- | Script starts searching to copy
-3-| Confirm your choice |  | 8- | Script searching and copying the files
-4-| Answer the question |  | 9- | Skipping the folders&files not finded
-5-| The script is starting |  | 10- | Script completion notice
+2-| Alert message so you don't forget |  | 7-| Script starts searching to copy
+3-| Confirm your choice |  | 8-| Script searching and copying the files
+4-| Answer the question |  | 9-| Skipping the folders&files not finded
+5-| The script is starting |  | 10-| Script completion advise
 
+   ![ExACriB](https://github.com/user-attachments/assets/680b0e77-1d2f-48db-add7-c558f06824db)
 
 </p>
 </details>
@@ -174,10 +162,13 @@ Step | happening |   | Step | happening
 <details><summary>If you **NOT** copied stock ROM to Firmware folder - Click to open</summary>
 <p>
 
-Step | happening |
-| ---: | :--- |
-11-| Simple message to continue script after required action
+Step | happening |   | Step | happening
+| ---: | :--- | :---: | ---: | :---
+1-| Run the script |  | 4-| Answer the question |
+2-| Alert message so you don't forget |  | 11-| Simple message to continue script after required action
+3-| Confirm your choice |  |   |  
 
+![11](https://github.com/user-attachments/assets/842b091c-365a-4475-b2a7-d301844ec109)
 
 </p>
 </details>
